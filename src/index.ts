@@ -2,8 +2,7 @@ type Callback = (value: any) => any
 
 export class Promise {
   private state = 'pending' as 'pending' | 'resolved' | 'rejected'
-  private value: any
-  private next?: Callback
+  private pendThen?: Callback
   static resolve: (val: any) => Promise
   static reject: (val: any) => Promise
 
@@ -15,22 +14,14 @@ export class Promise {
     if (this.state === 'pending') {
       this.state = 'resolved'
     }
-    this.value = val
-
-    if (this.next) {
-      this.next(this.value)
-    }
+    this.pendThen?.(val)
   }
 
   then(fn: Callback) {
     return new Promise((res) => {
       // defer run after this promise resolved
-      this.next = () => res(fn(this.value))
+      this.pendThen = (val) => res(fn(val))
     })
-  }
-
-  catch() {
-    // TODO
   }
 }
 
