@@ -81,6 +81,25 @@ const run = (name: string, MyPromise: typeof Promise) => {
       const promise = MyPromise.resolve(1)
       expect(promise).resolves.toBe(1)
     })
+
+    test('should Promise.reject works', async () => {
+      try {
+        await MyPromise.reject(1)
+        fail('should throw error')
+      } catch (error) {
+        expect(error).toBe(1)
+      }
+    })
+
+    test('should Promise.reject promise works', async () => {
+      const promise = MyPromise.resolve(1)
+      try {
+        await MyPromise.reject(promise)
+        fail('should throw error')
+      } catch (error) {
+        expect(error).toBe(promise)
+      }
+    })
   })
 }
 

@@ -3,6 +3,7 @@ type Callback = (value: any) => any
 export class Promise {
   private state = 'pending' as 'pending' | 'resolved' | 'rejected'
   private value: any
+  private error: any
   private pendThen?: Callback
   private pendCatch?: Callback
   static resolve: (val?: any) => Promise
@@ -29,10 +30,11 @@ export class Promise {
     this.pendThen?.(val)
   }
 
-  private reject(e?: Error) {
+  private reject(e?: any) {
     if (this.state === 'pending') {
       this.state = 'rejected'
     }
+    this.error = e
     this.pendCatch?.(e)
   }
 
@@ -53,15 +55,36 @@ export class Promise {
               res(resVal)
             }
           } catch (error) {
-            // TODO throw promiseLike?
             rej(error)
           }
         }
       })
     }
 
-    // run next tick
+    // run at next tick
     const nextTick = globalThis.queueMicrotask || process.nextTick
+
+    if (this.state === 'rejected') {
+      return new Promise((res, rej) =>
+        nextTick(() => {
+          if (!rejFn) {
+            rej(this.error)
+            return
+          }
+          try {
+            const resVal = rejFn(this.error)
+            if (typeof resVal?.then === 'function') {
+              resVal.then((v: any) => res(v))
+            } else {
+              res(resVal)
+            }
+          } catch (error) {
+            rej(error)
+          }
+        })
+      )
+    }
+
     return new Promise((res, rej) =>
       nextTick(() => {
         if (!resFn) {
@@ -76,30 +99,10 @@ export class Promise {
             res(resVal)
           }
         } catch (error) {
-          // TODO throw promiseLike?
           rej(error)
         }
       })
     )
-  }
-
-  catch(fn: Callback): Promise {
-    return new Promise((res, rej) => {
-      // defer run after this promise rejected
-      this.pendCatch = (val) => {
-        try {
-          const resVal = fn(val)
-          if (typeof resVal?.then === 'function') {
-            resVal.then((v: any) => res(v))
-          } else {
-            res(resVal)
-          }
-        } catch (error) {
-          // TODO throw promiseLike?
-          rej(error)
-        }
-      }
-    })
   }
 }
 
