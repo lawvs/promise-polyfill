@@ -1,8 +1,15 @@
 export class Promise {
-  value: any
-  queue: ((value: any) => any)[] = []
+  private value: any
+  private queue: ((value: any) => any)[] = []
 
-  resolve() {
+  constructor(fn: (res: Promise['resolve'], rej: Promise['reject']) => void) {
+    fn(
+      () => this.resolve(),
+      () => this.reject()
+    )
+  }
+
+  private resolve() {
     const pendfn = this.queue.shift()
     if (pendfn) {
       this.value = pendfn(this.value)
@@ -19,13 +26,6 @@ export class Promise {
 
   reject() {
     // TODO
-  }
-
-  constructor(fn: (res: Promise['resolve'], rej: Promise['reject']) => void) {
-    fn(
-      () => this.resolve(),
-      () => this.reject()
-    )
   }
 
   then(fn: (value: any) => any) {
