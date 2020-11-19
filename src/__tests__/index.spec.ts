@@ -15,7 +15,7 @@ beforeEach(() => {
 })
 
 describe('base', () => {
-  test('should promise works', () => {
+  test('should promise works', async () => {
     delay(1000)
       .then(() => '123')
       .then((val) => console.log(val))
@@ -24,18 +24,19 @@ describe('base', () => {
       .then(() => delay(2000))
       .then(() => console.log('C'))
 
-    expect(setTimeout).toBeCalled()
+    expect(setTimeout).toHaveBeenCalledTimes(1)
     expect(setTimeout).toHaveBeenLastCalledWith(expect.any(Function), 1000)
     jest.runOnlyPendingTimers()
+    await new Promise((res) => process.nextTick(res))
 
     expect(spyLog).toHaveBeenNthCalledWith(1, '123')
     expect(spyLog).toHaveBeenNthCalledWith(2, 'A')
     expect(spyLog).toHaveBeenNthCalledWith(3, 'B')
 
-    expect(setTimeout).toBeCalled()
-    expect(setTimeout).toHaveBeenLastCalledWith(expect.any(Function), 2000)
     expect(setTimeout).toHaveBeenCalledTimes(2)
+    expect(setTimeout).toHaveBeenLastCalledWith(expect.any(Function), 2000)
     jest.runOnlyPendingTimers()
+    await new Promise((res) => process.nextTick(res))
 
     expect(spyLog).toHaveBeenNthCalledWith(4, 'C')
     expect(spyLog).toHaveBeenCalledTimes(4)
