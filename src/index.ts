@@ -36,7 +36,7 @@ export class Promise {
     this.pendCatch?.(e)
   }
 
-  then(fn: Callback) {
+  then(fn: Callback): Promise {
     if (this.state === 'pending') {
       // defer run after this promise resolved
       return new Promise((res, rej) => {
@@ -56,23 +56,26 @@ export class Promise {
       })
     }
 
-    // run immediately
-    return new Promise((res, rej) => {
-      try {
-        const resVal = fn(this.value)
-        if (typeof resVal?.then === 'function') {
-          resVal.then((v: any) => res(v))
-        } else {
-          res(resVal)
+    // run next tick
+    const nextTick = globalThis.queueMicrotask || process.nextTick
+    return new Promise((res, rej) =>
+      nextTick(() => {
+        try {
+          const resVal = fn(this.value)
+          if (typeof resVal?.then === 'function') {
+            resVal.then((v: any) => res(v))
+          } else {
+            res(resVal)
+          }
+        } catch (error) {
+          // TODO throw promiseLike?
+          rej(error)
         }
-      } catch (error) {
-        // TODO throw promiseLike?
-        rej(error)
-      }
-    })
+      })
+    )
   }
 
-  catch(fn: Callback) {
+  catch(fn: Callback): Promise {
     return new Promise((res, rej) => {
       // defer run after this promise rejected
       this.pendCatch = (val) => {

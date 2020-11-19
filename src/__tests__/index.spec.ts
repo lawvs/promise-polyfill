@@ -54,7 +54,19 @@ describe('common', () => {
   test('should Promise works with await', async () => {
     await new MyPromise((res) => res())
     await MyPromise.resolve()
-    await MyPromise.reject()
+  })
+
+  test('should Promise works with delay then', async () => {
+    const fn = jest.fn(() => 2)
+    const promise = MyPromise.resolve(1)
+    promise.then(fn)
+    promise.then(fn)
+
+    expect(fn).toBeCalledTimes(0)
+    await new Promise((res) => process.nextTick(res))
+    expect(fn).toBeCalledTimes(2)
+    expect(fn).toHaveBeenNthCalledWith(1, 1)
+    expect(fn).toHaveBeenNthCalledWith(2, 1)
   })
 
   test('should Promise.resolve works', () => {
