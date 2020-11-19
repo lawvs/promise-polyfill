@@ -18,7 +18,8 @@ export class Promise {
         (e) => this.reject(e)
       )
     } catch (error) {
-      this.pendCatch?.(error)
+      this.state = 'rejected'
+      this.error = error
     }
   }
 

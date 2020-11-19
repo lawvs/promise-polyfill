@@ -100,6 +100,17 @@ const run = (name: string, MyPromise: typeof Promise) => {
         expect(error).toBe(promise)
       }
     })
+
+    test('should throws error at constructor works', async () => {
+      try {
+        await new MyPromise((res, rej) => {
+          throw 1
+        })
+        fail('should throw error')
+      } catch (error) {
+        expect(error).toBe(1)
+      }
+    })
   })
 }
 
