@@ -20,7 +20,14 @@ export class Promise {
   then(fn: Callback) {
     return new Promise((res) => {
       // defer run after this promise resolved
-      this.pendThen = (val) => res(fn(val))
+      this.pendThen = (val) => {
+        const resVal = fn(val)
+        if (typeof resVal?.then === 'function') {
+          resVal.then((v: any) => res(v))
+        } else {
+          res(resVal)
+        }
+      }
     })
   }
 }
