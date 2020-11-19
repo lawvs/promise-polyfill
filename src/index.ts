@@ -36,13 +36,17 @@ export class Promise {
     this.pendCatch?.(e)
   }
 
-  then(fn: Callback): Promise {
+  then(resFn?: Callback, rejFn?: Callback): Promise {
     if (this.state === 'pending') {
       // defer run after this promise resolved
       return new Promise((res, rej) => {
         this.pendThen = (val) => {
+          if (!resFn) {
+            res(this.value)
+            return
+          }
           try {
-            const resVal = fn(val)
+            const resVal = resFn(val)
             if (typeof resVal?.then === 'function') {
               resVal.then((v: any) => res(v))
             } else {
@@ -60,8 +64,12 @@ export class Promise {
     const nextTick = globalThis.queueMicrotask || process.nextTick
     return new Promise((res, rej) =>
       nextTick(() => {
+        if (!resFn) {
+          res(this.value)
+          return
+        }
         try {
-          const resVal = fn(this.value)
+          const resVal = resFn(this.value)
           if (typeof resVal?.then === 'function') {
             resVal.then((v: any) => res(v))
           } else {

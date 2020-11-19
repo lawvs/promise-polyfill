@@ -49,6 +49,16 @@ const run = (name: string, MyPromise: typeof Promise) => {
       expect(fn).toBeCalledWith(expect.any(Function), expect.any(Function))
     })
 
+    test('should Promise.resolve works', () => {
+      const promise = MyPromise.resolve(1)
+      expect(promise).resolves.toBe(1)
+    })
+
+    test('should Promise.then nothing works', async () => {
+      const val = await MyPromise.resolve(1).then().then()
+      expect(val).toBe(1)
+    })
+
     test('should Promise works with await', async () => {
       await new MyPromise((res) => res())
       await MyPromise.resolve()
