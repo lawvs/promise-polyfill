@@ -1,35 +1,37 @@
+type Callback = (value: any) => any
+
 export class Promise {
+  private state = 'pending' as 'pending' | 'resolved' | 'rejected'
   private value: any
-  private queue: ((value: any) => any)[] = []
+  private next?: Callback
+  static resolve: (val: any) => Promise
+  static reject: (val: any) => Promise
 
-  constructor(fn: (res: Promise['resolve'], rej: Promise['reject']) => void) {
-    fn(
-      () => this.resolve(),
-      () => this.reject()
-    )
+  constructor(fn: (res: Promise['resolveValue']) => void) {
+    fn((val) => this.resolveValue(val))
   }
 
-  private resolve() {
-    const pendfn = this.queue.shift()
-    if (pendfn) {
-      this.value = pendfn(this.value)
-    } else {
-      return
+  private resolveValue(val?: any) {
+    if (this.state === 'pending') {
+      this.state = 'resolved'
     }
+    this.value = val
 
-    if (typeof this.value?.then === 'function') {
-      this.value = this.value.then(() => this.resolve())
-    } else {
-      this.resolve()
+    if (this.next) {
+      this.next(this.value)
     }
   }
 
-  reject() {
+  then(fn: Callback) {
+    return new Promise((res) => {
+      // defer run after this promise resolved
+      this.next = () => res(fn(this.value))
+    })
+  }
+
+  catch() {
     // TODO
   }
-
-  then(fn: (value: any) => any) {
-    this.queue.push(fn)
-    return this
-  }
 }
+
+Promise.resolve = (val: any) => new Promise((res) => res(val))
