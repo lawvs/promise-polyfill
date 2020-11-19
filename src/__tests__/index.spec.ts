@@ -41,3 +41,23 @@ describe('base', () => {
     expect(spyLog).toHaveBeenCalledTimes(4)
   })
 })
+
+describe('common', () => {
+  test('should new Promise call with res/rej', async () => {
+    const fn = jest.fn()
+    new MyPromise(fn)
+    expect(fn).toBeCalledTimes(1)
+    expect(fn).toBeCalledWith(expect.any(Function), expect.any(Function))
+  })
+
+  test('should Promise works with await', async () => {
+    await new MyPromise((res) => res())
+    await MyPromise.resolve()
+    await MyPromise.reject()
+  })
+
+  test('should Promise.resolve works', () => {
+    const promise = MyPromise.resolve(1)
+    expect(promise).resolves.toBe(1)
+  })
+})
