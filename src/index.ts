@@ -105,6 +105,10 @@ export class Promise {
       })
     )
   }
+
+  catch(rejFn: Callback) {
+    return this.then(undefined, rejFn)
+  }
 }
 
 Promise.resolve = (val?: any) => new Promise((res) => res(val))

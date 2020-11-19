@@ -103,13 +103,22 @@ const run = (name: string, MyPromise: typeof Promise) => {
 
     test('should throws error at constructor works', async () => {
       try {
-        await new MyPromise((res, rej) => {
+        await new MyPromise(() => {
           throw 1
         })
         fail('should throw error')
       } catch (error) {
         expect(error).toBe(1)
       }
+    })
+
+    test('should throws error at constructor works', async () => {
+      const fn = jest.fn()
+      await new MyPromise(() => {
+        throw 1
+      }).catch(fn)
+      expect(fn).toBeCalledTimes(1)
+      expect(fn).toHaveBeenCalledWith(1)
     })
   })
 }
