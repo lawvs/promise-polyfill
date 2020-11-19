@@ -180,6 +180,16 @@ const run = (name: string, MyPromise: typeof Promise) => {
       expect(rejFn2).toBeCalledTimes(1)
       expect(rejFn2).toHaveBeenCalledWith(2)
     })
+
+    test('should multiple then with delay resolve works', async () => {
+      const fn = jest.fn()
+      const promise = new MyPromise((res) => setTimeout(() => res(), 1))
+      promise.then(fn)
+      promise.then(fn)
+      jest.runAllTimers()
+      await new Promise((res) => process.nextTick(res))
+      expect(fn).toBeCalledTimes(2)
+    })
   })
 }
 

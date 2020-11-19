@@ -1,13 +1,13 @@
-type Callback = (value: any) => any
+type Callback = (value?: any) => any
 
 export class Promise {
   private state = 'pending' as 'pending' | 'resolved' | 'rejected'
   private value: any
   private error: any
-  private pendThen?: Callback
-  private pendCatch?: Callback
-  static resolve: (val?: any) => Promise
-  static reject: (val?: any) => Promise
+  private pendThen: Callback[] = []
+  private pendCatch: Callback[] = []
+  static resolve: Callback
+  static reject: Callback
 
   constructor(
     fn: (res: Promise['resolveValue'], rej: Promise['reject']) => void
@@ -24,26 +24,22 @@ export class Promise {
   }
 
   private resolveValue(val?: any) {
-    if (this.state === 'pending') {
-      this.state = 'resolved'
-    }
+    this.state = 'resolved'
     this.value = val
-    this.pendThen?.(val)
+    this.pendThen.forEach((fn) => fn(val))
   }
 
   private reject(e?: any) {
-    if (this.state === 'pending') {
-      this.state = 'rejected'
-    }
+    this.state = 'rejected'
     this.error = e
-    this.pendCatch?.(e)
+    this.pendCatch.forEach((fn) => fn(e))
   }
 
   then(resFn?: Callback, rejFn?: Callback): Promise {
     if (this.state === 'pending') {
       // defer run after this promise resolved
       return new Promise((res, rej) => {
-        this.pendThen = (val) => {
+        this.pendThen.push((val) => {
           if (!resFn) {
             res(this.value)
             return
@@ -58,15 +54,15 @@ export class Promise {
           } catch (error) {
             rej(error)
           }
-        }
+        })
 
-        this.pendCatch = (val) => {
+        this.pendCatch.push((e) => {
           if (!rejFn) {
-            rej(this.error)
+            rej(e)
             return
           }
           try {
-            const resVal = rejFn(this.error)
+            const resVal = rejFn(e)
             if (typeof resVal?.then === 'function') {
               resVal.then(res, rej)
             } else {
@@ -75,7 +71,7 @@ export class Promise {
           } catch (error) {
             rej(error)
           }
-        }
+        })
       })
     }
 
