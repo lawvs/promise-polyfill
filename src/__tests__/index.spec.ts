@@ -166,6 +166,20 @@ const run = (name: string, MyPromise: typeof Promise) => {
       expect(rejFn).toBeCalledTimes(1)
       expect(rejFn).toHaveBeenCalledWith(1)
     })
+
+    test('should nested reject works', async () => {
+      const resFn = jest.fn()
+      const rejFn = jest.fn(() => MyPromise.reject(2))
+      const rejFn2 = jest.fn()
+      const promise = MyPromise.reject(1)
+      await promise.then(resFn).then(resFn, rejFn).then(resFn, rejFn2)
+
+      expect(resFn).toBeCalledTimes(0)
+      expect(rejFn).toBeCalledTimes(1)
+      expect(rejFn).toHaveBeenCalledWith(1)
+      expect(rejFn2).toBeCalledTimes(1)
+      expect(rejFn2).toHaveBeenCalledWith(2)
+    })
   })
 }
 
