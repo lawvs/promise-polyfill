@@ -59,6 +59,23 @@ export class Promise {
             rej(error)
           }
         }
+
+        this.pendCatch = (val) => {
+          if (!rejFn) {
+            rej(this.error)
+            return
+          }
+          try {
+            const resVal = rejFn(this.error)
+            if (typeof resVal?.then === 'function') {
+              resVal.then(res, rej)
+            } else {
+              res(resVal)
+            }
+          } catch (error) {
+            rej(error)
+          }
+        }
       })
     }
 
@@ -75,7 +92,7 @@ export class Promise {
           try {
             const resVal = rejFn(this.error)
             if (typeof resVal?.then === 'function') {
-              resVal.then((v: any) => res(v))
+              resVal.then(res, rej)
             } else {
               res(resVal)
             }

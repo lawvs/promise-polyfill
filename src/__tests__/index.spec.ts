@@ -91,6 +91,20 @@ const run = (name: string, MyPromise: typeof Promise) => {
       }
     })
 
+    test('should throws error and then', async () => {
+      const resFn = jest.fn()
+      const rejFn = jest.fn(() => 2)
+      const resFn2 = jest.fn()
+      const rejFn2 = jest.fn()
+      await MyPromise.reject(1).then(resFn, rejFn).then(resFn2, rejFn2)
+      expect(resFn).toBeCalledTimes(0)
+      expect(rejFn).toBeCalledTimes(1)
+      expect(rejFn).toHaveBeenCalledWith(1)
+      expect(resFn2).toBeCalledTimes(1)
+      expect(rejFn2).toBeCalledTimes(0)
+      expect(resFn2).toHaveBeenCalledWith(2)
+    })
+
     test('should Promise.reject promise works', async () => {
       const promise = MyPromise.resolve(1)
       try {
@@ -112,6 +126,17 @@ const run = (name: string, MyPromise: typeof Promise) => {
       }
     })
 
+    test('should reject new Promise works', async () => {
+      try {
+        await new MyPromise((res, rej) => {
+          throw 1
+        })
+        fail('should throw error')
+      } catch (error) {
+        expect(error).toBe(1)
+      }
+    })
+
     test('should throws error at constructor works', async () => {
       const fn = jest.fn()
       await new MyPromise(() => {
@@ -119,6 +144,27 @@ const run = (name: string, MyPromise: typeof Promise) => {
       }).catch(fn)
       expect(fn).toBeCalledTimes(1)
       expect(fn).toHaveBeenCalledWith(1)
+    })
+
+    test('should delay error at constructor works', async () => {
+      const fn = jest.fn()
+      await new MyPromise((res, rej) => {
+        setTimeout(() => rej(1), 1)
+        jest.runAllTimers()
+      }).catch(fn)
+      expect(fn).toBeCalledTimes(1)
+      expect(fn).toHaveBeenCalledWith(1)
+    })
+
+    test('should reject delay works', async () => {
+      const resFn = jest.fn()
+      const rejFn = jest.fn(() => 2)
+      const promise = MyPromise.reject(1)
+      await promise.then(resFn).then(resFn, rejFn)
+
+      expect(resFn).toBeCalledTimes(0)
+      expect(rejFn).toBeCalledTimes(1)
+      expect(rejFn).toHaveBeenCalledWith(1)
     })
   })
 }
