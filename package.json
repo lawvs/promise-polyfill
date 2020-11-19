@@ -7,6 +7,7 @@
   "author": "lawvs <18554747+lawvs@users.noreply.github.com>",
   "license": "MIT",
   "scripts": {
+    "dev": "jest --watch",
     "build": "tsc",
     "clean": "rm -rf dist",
     "typecheck": "tsc --noEmit",

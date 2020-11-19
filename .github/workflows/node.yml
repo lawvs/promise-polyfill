@@ -47,3 +47,12 @@ jobs:
 
       - name: Build
         run: yarn build
+
+      # https://github.com/peaceiris/actions-gh-pages
+      - name: Deploy
+        if: github.ref == 'refs/heads/master'
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: coverage/lcov-report
+          force_orphan: true
