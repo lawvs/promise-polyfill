@@ -10,6 +10,7 @@ export class Promise {
   private pendCatch: Callback[] = []
   static resolve: Callback
   static reject: Callback
+  static all: (promises: Promise[]) => void
 
   constructor(
     fn: (res: Promise['resolveValue'], rej: Promise['rejectValue']) => void
@@ -96,7 +97,29 @@ export class Promise {
   catch(rejFn: Callback) {
     return this.then(undefined, rejFn)
   }
+
+  finally(fn: Callback) {
+    return this.then(fn, fn)
+  }
 }
 
 Promise.resolve = (val?: any) => new Promise((res) => res(val))
 Promise.reject = (e?: any) => new Promise((_, rej) => rej(e))
+
+Promise.all = (promises) => {
+  const len = promises.length
+  let cnt = 0
+  return new Promise((res) => {
+    if (!len) {
+      res()
+    }
+    promises.forEach((promise) =>
+      promise.then(() => {
+        cnt++
+        if (cnt === len) {
+          res()
+        }
+      })
+    )
+  })
+}

@@ -216,6 +216,27 @@ const run = (name: string, MyPromise: typeof Promise) => {
       expect(rejFn).toBeCalledTimes(1)
       expect(rejFn).toBeCalledWith(1)
     })
+
+    test('should promise finally works', async () => {
+      const fn = jest.fn()
+      MyPromise.resolve().finally(fn)
+      MyPromise.reject().finally(fn)
+      MyPromise.resolve()
+        .then(() => {
+          throw 1
+        })
+        .finally(fn)
+      MyPromise.reject().then().finally(fn)
+      await nextTick()
+      expect(fn).toBeCalledTimes(4)
+    })
+
+    test('should promise.all works', async () => {
+      const fn = jest.fn()
+      await MyPromise.all([]).then(fn)
+      await MyPromise.all([MyPromise.resolve(1)]).then(fn)
+      expect(fn).toBeCalledTimes(2)
+    })
   })
 }
 
