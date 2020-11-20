@@ -90,6 +90,7 @@ export class Promise {
           // run at next tick
           nextTick(() => baseReject(res, rej))
         )
+      /* istanbul ignore next */
       default:
         throw new Error('Unknown promise state: ' + this.state)
     }

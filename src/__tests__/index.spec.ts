@@ -148,6 +148,33 @@ const run = (name: string, MyPromise: typeof Promise) => {
       expect(fn).toHaveBeenCalledWith(1)
     })
 
+    test('should delay resolve with throw works', async () => {
+      const fn = jest.fn(() => {
+        throw 1
+      })
+      const rejFn = jest.fn()
+      const promise = new MyPromise((res) => setTimeout(() => res(), 1))
+      promise.then(fn).catch(rejFn)
+      jest.runAllTimers()
+      await nextTick()
+      expect(fn).toBeCalledTimes(1)
+      expect(rejFn).toBeCalledTimes(1)
+      expect(rejFn).toBeCalledWith(1)
+    })
+
+    test('should delay reject with throw works', async () => {
+      const fn = jest.fn(() => {
+        throw 1
+      })
+      const rejFn = jest.fn()
+      MyPromise.reject().catch(fn).catch(rejFn)
+      jest.runAllTimers()
+      await nextTick()
+      expect(fn).toBeCalledTimes(1)
+      expect(rejFn).toBeCalledTimes(1)
+      expect(rejFn).toBeCalledWith(1)
+    })
+
     test('should delay error at constructor works', async () => {
       const fn = jest.fn()
       await new MyPromise((res, rej) => {
@@ -205,20 +232,6 @@ const run = (name: string, MyPromise: typeof Promise) => {
       expect(rejFn).toBeCalledWith(1)
     })
 
-    test('should delay resolve with throw works', async () => {
-      const fn = jest.fn(() => {
-        throw 1
-      })
-      const rejFn = jest.fn()
-      const promise = new MyPromise((res) => setTimeout(() => res(), 1))
-      promise.then(fn).catch(rejFn)
-      jest.runAllTimers()
-      await nextTick()
-      expect(fn).toBeCalledTimes(1)
-      expect(rejFn).toBeCalledTimes(1)
-      expect(rejFn).toBeCalledWith(1)
-    })
-
     test('should promise finally works', async () => {
       const fn = jest.fn()
       MyPromise.resolve().finally(fn)
@@ -236,8 +249,9 @@ const run = (name: string, MyPromise: typeof Promise) => {
     test('should promise.all works', async () => {
       const fn = jest.fn()
       await MyPromise.all([]).then(fn)
-      await MyPromise.all([MyPromise.resolve(1)]).then(fn)
-      expect(fn).toBeCalledTimes(2)
+      await MyPromise.all([MyPromise.resolve()]).then(fn)
+      await MyPromise.all([MyPromise.resolve(), MyPromise.resolve()]).then(fn)
+      expect(fn).toBeCalledTimes(3)
     })
   })
 }
