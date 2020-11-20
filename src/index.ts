@@ -38,85 +38,58 @@ export class Promise {
   }
 
   then(resFn?: Callback, rejFn?: Callback): Promise {
+    const baseResolve = (res: Callback, rej: Callback) => {
+      if (!resFn) {
+        res(this.value)
+        return
+      }
+      try {
+        const resVal = resFn(this.value)
+        if (typeof resVal?.then === 'function') {
+          resVal.then((v: any) => res(v))
+        } else {
+          res(resVal)
+        }
+      } catch (error) {
+        rej(error)
+      }
+    }
+
+    const baseReject = (res: Callback, rej: Callback) => {
+      if (!rejFn) {
+        rej(this.error)
+        return
+      }
+      try {
+        const resVal = rejFn(this.error)
+        if (typeof resVal?.then === 'function') {
+          resVal.then(res, rej)
+        } else {
+          res(resVal)
+        }
+      } catch (error) {
+        rej(error)
+      }
+    }
+
     if (this.state === 'pending') {
       // defer run after this promise resolved
       return new Promise((res, rej) => {
-        this.pendThen.push((val) => {
-          if (!resFn) {
-            res(this.value)
-            return
-          }
-          try {
-            const resVal = resFn(val)
-            if (typeof resVal?.then === 'function') {
-              resVal.then((v: any) => res(v))
-            } else {
-              res(resVal)
-            }
-          } catch (error) {
-            rej(error)
-          }
-        })
-
-        this.pendCatch.push((e) => {
-          if (!rejFn) {
-            rej(e)
-            return
-          }
-          try {
-            const resVal = rejFn(e)
-            if (typeof resVal?.then === 'function') {
-              resVal.then(res, rej)
-            } else {
-              res(resVal)
-            }
-          } catch (error) {
-            rej(error)
-          }
-        })
+        this.pendThen.push(() => baseResolve(res, rej))
+        this.pendCatch.push(() => baseReject(res, rej))
       })
     }
 
     if (this.state === 'rejected') {
       return new Promise((res, rej) =>
         // run at next tick
-        nextTick(() => {
-          if (!rejFn) {
-            rej(this.error)
-            return
-          }
-          try {
-            const resVal = rejFn(this.error)
-            if (typeof resVal?.then === 'function') {
-              resVal.then(res, rej)
-            } else {
-              res(resVal)
-            }
-          } catch (error) {
-            rej(error)
-          }
-        })
+        nextTick(() => baseReject(res, rej))
       )
     }
 
     return new Promise((res, rej) =>
       // run at next tick
-      nextTick(() => {
-        if (!resFn) {
-          res(this.value)
-          return
-        }
-        try {
-          const resVal = resFn(this.value)
-          if (typeof resVal?.then === 'function') {
-            resVal.then((v: any) => res(v))
-          } else {
-            res(resVal)
-          }
-        } catch (error) {
-          rej(error)
-        }
-      })
+      nextTick(() => baseResolve(res, rej))
     )
   }
 
