@@ -73,25 +73,26 @@ export class Promise {
       }
     }
 
-    if (this.state === 'pending') {
-      // defer run after this promise resolved
-      return new Promise((res, rej) => {
-        this.pendThen.push(() => baseResolve(res, rej))
-        this.pendCatch.push(() => baseReject(res, rej))
-      })
+    switch (this.state) {
+      case 'pending':
+        // defer run after this promise resolved
+        return new Promise((res, rej) => {
+          this.pendThen.push(() => baseResolve(res, rej))
+          this.pendCatch.push(() => baseReject(res, rej))
+        })
+      case 'resolved':
+        return new Promise((res, rej) =>
+          // run at next tick
+          nextTick(() => baseResolve(res, rej))
+        )
+      case 'rejected':
+        return new Promise((res, rej) =>
+          // run at next tick
+          nextTick(() => baseReject(res, rej))
+        )
+      default:
+        throw new Error('Unknown promise state: ' + this.state)
     }
-
-    if (this.state === 'rejected') {
-      return new Promise((res, rej) =>
-        // run at next tick
-        nextTick(() => baseReject(res, rej))
-      )
-    }
-
-    return new Promise((res, rej) =>
-      // run at next tick
-      nextTick(() => baseResolve(res, rej))
-    )
   }
 
   catch(rejFn: Callback) {

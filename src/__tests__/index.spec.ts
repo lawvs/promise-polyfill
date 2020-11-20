@@ -1,6 +1,8 @@
 import { Promise as PromisePolyfill } from '..'
 
 const run = (name: string, MyPromise: typeof Promise) => {
+  const nextTick = () => new Promise((res) => process.nextTick(res))
+
   function delay(ms: number) {
     return new MyPromise((res) => setTimeout(() => res(), ms))
   }
@@ -25,7 +27,7 @@ const run = (name: string, MyPromise: typeof Promise) => {
       expect(setTimeout).toHaveBeenCalledTimes(1)
       expect(setTimeout).toHaveBeenLastCalledWith(expect.any(Function), 1000)
       jest.runOnlyPendingTimers()
-      await new Promise((res) => process.nextTick(res))
+      await nextTick()
 
       expect(spyLog).toHaveBeenNthCalledWith(1, '123')
       expect(spyLog).toHaveBeenNthCalledWith(2, 'A')
@@ -34,7 +36,7 @@ const run = (name: string, MyPromise: typeof Promise) => {
       expect(setTimeout).toHaveBeenCalledTimes(2)
       expect(setTimeout).toHaveBeenLastCalledWith(expect.any(Function), 2000)
       jest.runOnlyPendingTimers()
-      await new Promise((res) => process.nextTick(res))
+      await nextTick()
 
       expect(spyLog).toHaveBeenNthCalledWith(4, 'C')
       expect(spyLog).toHaveBeenCalledTimes(4)
@@ -71,7 +73,7 @@ const run = (name: string, MyPromise: typeof Promise) => {
       promise.then(fn)
 
       expect(fn).toBeCalledTimes(0)
-      await new Promise((res) => process.nextTick(res))
+      await nextTick()
       expect(fn).toBeCalledTimes(2)
       expect(fn).toHaveBeenNthCalledWith(1, 1)
       expect(fn).toHaveBeenNthCalledWith(2, 1)
@@ -187,7 +189,7 @@ const run = (name: string, MyPromise: typeof Promise) => {
       promise.then(fn)
       promise.then(fn)
       jest.runAllTimers()
-      await new Promise((res) => process.nextTick(res))
+      await nextTick()
       expect(fn).toBeCalledTimes(2)
     })
 
@@ -197,7 +199,7 @@ const run = (name: string, MyPromise: typeof Promise) => {
       const promise = new MyPromise((res, rej) => setTimeout(() => rej(1), 1))
       promise.then(fn).catch(rejFn)
       jest.runAllTimers()
-      await new Promise((res) => process.nextTick(res))
+      await nextTick()
       expect(fn).toBeCalledTimes(0)
       expect(rejFn).toBeCalledTimes(1)
       expect(rejFn).toBeCalledWith(1)
@@ -211,7 +213,7 @@ const run = (name: string, MyPromise: typeof Promise) => {
       const promise = new MyPromise((res) => setTimeout(() => res(), 1))
       promise.then(fn).catch(rejFn)
       jest.runAllTimers()
-      await new Promise((res) => process.nextTick(res))
+      await nextTick()
       expect(fn).toBeCalledTimes(1)
       expect(rejFn).toBeCalledTimes(1)
       expect(rejFn).toBeCalledWith(1)
