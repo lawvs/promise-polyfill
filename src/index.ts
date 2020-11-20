@@ -1,5 +1,7 @@
 type Callback = (value?: any) => any
 
+const nextTick = globalThis.queueMicrotask || process.nextTick
+
 export class Promise {
   private state = 'pending' as 'pending' | 'resolved' | 'rejected'
   private value: any
@@ -10,12 +12,12 @@ export class Promise {
   static reject: Callback
 
   constructor(
-    fn: (res: Promise['resolveValue'], rej: Promise['reject']) => void
+    fn: (res: Promise['resolveValue'], rej: Promise['rejectValue']) => void
   ) {
     try {
       fn(
         (val) => this.resolveValue(val),
-        (e) => this.reject(e)
+        (e) => this.rejectValue(e)
       )
     } catch (error) {
       this.state = 'rejected'
@@ -29,7 +31,7 @@ export class Promise {
     this.pendThen.forEach((fn) => fn(val))
   }
 
-  private reject(e?: any) {
+  private rejectValue(e?: any) {
     this.state = 'rejected'
     this.error = e
     this.pendCatch.forEach((fn) => fn(e))
@@ -75,11 +77,9 @@ export class Promise {
       })
     }
 
-    // run at next tick
-    const nextTick = globalThis.queueMicrotask || process.nextTick
-
     if (this.state === 'rejected') {
       return new Promise((res, rej) =>
+        // run at next tick
         nextTick(() => {
           if (!rejFn) {
             rej(this.error)
@@ -100,6 +100,7 @@ export class Promise {
     }
 
     return new Promise((res, rej) =>
+      // run at next tick
       nextTick(() => {
         if (!resFn) {
           res(this.value)

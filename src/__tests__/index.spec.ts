@@ -190,6 +190,32 @@ const run = (name: string, MyPromise: typeof Promise) => {
       await new Promise((res) => process.nextTick(res))
       expect(fn).toBeCalledTimes(2)
     })
+
+    test('should multiple then with delay reject works', async () => {
+      const fn = jest.fn()
+      const rejFn = jest.fn()
+      const promise = new MyPromise((res, rej) => setTimeout(() => rej(1), 1))
+      promise.then(fn).catch(rejFn)
+      jest.runAllTimers()
+      await new Promise((res) => process.nextTick(res))
+      expect(fn).toBeCalledTimes(0)
+      expect(rejFn).toBeCalledTimes(1)
+      expect(rejFn).toBeCalledWith(1)
+    })
+
+    test('should delay resolve with throw works', async () => {
+      const fn = jest.fn(() => {
+        throw 1
+      })
+      const rejFn = jest.fn()
+      const promise = new MyPromise((res) => setTimeout(() => res(), 1))
+      promise.then(fn).catch(rejFn)
+      jest.runAllTimers()
+      await new Promise((res) => process.nextTick(res))
+      expect(fn).toBeCalledTimes(1)
+      expect(rejFn).toBeCalledTimes(1)
+      expect(rejFn).toBeCalledWith(1)
+    })
   })
 }
 
