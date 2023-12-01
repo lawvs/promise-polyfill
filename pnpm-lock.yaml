@@ -5,6 +5,9 @@ settings:
   excludeLinksFromLockfile: false
 
 devDependencies:
+  '@types/jest':
+    specifier: ^29.5.10
+    version: 29.5.10
   jest:
     specifier: ^29.7.0
     version: 29.7.0(@types/node@20.10.1)(ts-node@10.9.1)
@@ -715,6 +718,13 @@ packages:
     resolution: {integrity: sha512-pk2B1NWalF9toCRu6gjBzR69syFjP4Od8WRAX+0mmf9lAjCRicLOWc+ZrxZHx/0XRjotgkF9t6iaMJ+aXcOdZQ==}
     dependencies:
       '@types/istanbul-lib-report': 3.0.3
+    dev: true
+
+  /@types/jest@29.5.10:
+    resolution: {integrity: sha512-tE4yxKEphEyxj9s4inideLHktW/x6DwesIwWZ9NN1FKf9zbJYsnhBoA9vrHA/IuIOKwPa5PcFBNV4lpMIOEzyQ==}
+    dependencies:
+      expect: 29.7.0
+      pretty-format: 29.7.0
     dev: true
 
   /@types/node@20.10.1:
