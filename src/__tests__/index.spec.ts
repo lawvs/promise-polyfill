@@ -47,8 +47,8 @@ const run = (name: string, MyPromise: typeof Promise) => {
     test("should new Promise call with res/rej", async () => {
       const fn = jest.fn();
       new MyPromise(fn);
-      expect(fn).toBeCalledTimes(1);
-      expect(fn).toBeCalledWith(expect.any(Function), expect.any(Function));
+      expect(fn).toHaveBeenCalledTimes(1);
+      expect(fn).toHaveBeenCalledWith(expect.any(Function), expect.any(Function));
     });
 
     test("should Promise.resolve works", () => {
@@ -72,9 +72,9 @@ const run = (name: string, MyPromise: typeof Promise) => {
       promise.then(fn);
       promise.then(fn);
 
-      expect(fn).toBeCalledTimes(0);
+      expect(fn).toHaveBeenCalledTimes(0);
       await nextTick();
-      expect(fn).toBeCalledTimes(2);
+      expect(fn).toHaveBeenCalledTimes(2);
       expect(fn).toHaveBeenNthCalledWith(1, 1);
       expect(fn).toHaveBeenNthCalledWith(2, 1);
     });
@@ -99,11 +99,11 @@ const run = (name: string, MyPromise: typeof Promise) => {
       const resFn2 = jest.fn();
       const rejFn2 = jest.fn();
       await MyPromise.reject(1).then(resFn, rejFn).then(resFn2, rejFn2);
-      expect(resFn).toBeCalledTimes(0);
-      expect(rejFn).toBeCalledTimes(1);
+      expect(resFn).toHaveBeenCalledTimes(0);
+      expect(rejFn).toHaveBeenCalledTimes(1);
       expect(rejFn).toHaveBeenCalledWith(1);
-      expect(resFn2).toBeCalledTimes(1);
-      expect(rejFn2).toBeCalledTimes(0);
+      expect(resFn2).toHaveBeenCalledTimes(1);
+      expect(rejFn2).toHaveBeenCalledTimes(0);
       expect(resFn2).toHaveBeenCalledWith(2);
     });
 
@@ -144,7 +144,7 @@ const run = (name: string, MyPromise: typeof Promise) => {
       await new MyPromise(() => {
         throw 1;
       }).catch(fn);
-      expect(fn).toBeCalledTimes(1);
+      expect(fn).toHaveBeenCalledTimes(1);
       expect(fn).toHaveBeenCalledWith(1);
     });
 
@@ -157,9 +157,9 @@ const run = (name: string, MyPromise: typeof Promise) => {
       promise.then(fn).catch(rejFn);
       jest.runAllTimers();
       await nextTick();
-      expect(fn).toBeCalledTimes(1);
-      expect(rejFn).toBeCalledTimes(1);
-      expect(rejFn).toBeCalledWith(1);
+      expect(fn).toHaveBeenCalledTimes(1);
+      expect(rejFn).toHaveBeenCalledTimes(1);
+      expect(rejFn).toHaveBeenCalledWith(1);
     });
 
     test("should delay reject with throw works", async () => {
@@ -170,9 +170,9 @@ const run = (name: string, MyPromise: typeof Promise) => {
       MyPromise.reject().catch(fn).catch(rejFn);
       jest.runAllTimers();
       await nextTick();
-      expect(fn).toBeCalledTimes(1);
-      expect(rejFn).toBeCalledTimes(1);
-      expect(rejFn).toBeCalledWith(1);
+      expect(fn).toHaveBeenCalledTimes(1);
+      expect(rejFn).toHaveBeenCalledTimes(1);
+      expect(rejFn).toHaveBeenCalledWith(1);
     });
 
     test("should delay error at constructor works", async () => {
@@ -181,7 +181,7 @@ const run = (name: string, MyPromise: typeof Promise) => {
         setTimeout(() => rej(1), 1);
         jest.runAllTimers();
       }).catch(fn);
-      expect(fn).toBeCalledTimes(1);
+      expect(fn).toHaveBeenCalledTimes(1);
       expect(fn).toHaveBeenCalledWith(1);
     });
 
@@ -191,8 +191,8 @@ const run = (name: string, MyPromise: typeof Promise) => {
       const promise = MyPromise.reject(1);
       await promise.then(resFn).then(resFn, rejFn);
 
-      expect(resFn).toBeCalledTimes(0);
-      expect(rejFn).toBeCalledTimes(1);
+      expect(resFn).toHaveBeenCalledTimes(0);
+      expect(rejFn).toHaveBeenCalledTimes(1);
       expect(rejFn).toHaveBeenCalledWith(1);
     });
 
@@ -203,10 +203,10 @@ const run = (name: string, MyPromise: typeof Promise) => {
       const promise = MyPromise.reject(1);
       await promise.then(resFn).then(resFn, rejFn).then(resFn, rejFn2);
 
-      expect(resFn).toBeCalledTimes(0);
-      expect(rejFn).toBeCalledTimes(1);
+      expect(resFn).toHaveBeenCalledTimes(0);
+      expect(rejFn).toHaveBeenCalledTimes(1);
       expect(rejFn).toHaveBeenCalledWith(1);
-      expect(rejFn2).toBeCalledTimes(1);
+      expect(rejFn2).toHaveBeenCalledTimes(1);
       expect(rejFn2).toHaveBeenCalledWith(2);
     });
 
@@ -217,7 +217,7 @@ const run = (name: string, MyPromise: typeof Promise) => {
       promise.then(fn);
       jest.runAllTimers();
       await nextTick();
-      expect(fn).toBeCalledTimes(2);
+      expect(fn).toHaveBeenCalledTimes(2);
     });
 
     test("should multiple then with delay reject works", async () => {
@@ -227,9 +227,9 @@ const run = (name: string, MyPromise: typeof Promise) => {
       promise.then(fn).catch(rejFn);
       jest.runAllTimers();
       await nextTick();
-      expect(fn).toBeCalledTimes(0);
-      expect(rejFn).toBeCalledTimes(1);
-      expect(rejFn).toBeCalledWith(1);
+      expect(fn).toHaveBeenCalledTimes(0);
+      expect(rejFn).toHaveBeenCalledTimes(1);
+      expect(rejFn).toHaveBeenCalledWith(1);
     });
 
     test("should promise finally works", async () => {
@@ -243,7 +243,7 @@ const run = (name: string, MyPromise: typeof Promise) => {
         .finally(fn);
       MyPromise.reject().then().finally(fn);
       await nextTick();
-      expect(fn).toBeCalledTimes(4);
+      expect(fn).toHaveBeenCalledTimes(4);
     });
 
     test("should promise.all works", async () => {
@@ -251,7 +251,7 @@ const run = (name: string, MyPromise: typeof Promise) => {
       await MyPromise.all([]).then(fn);
       await MyPromise.all([MyPromise.resolve()]).then(fn);
       await MyPromise.all([MyPromise.resolve(), MyPromise.resolve()]).then(fn);
-      expect(fn).toBeCalledTimes(3);
+      expect(fn).toHaveBeenCalledTimes(3);
     });
   });
 };
