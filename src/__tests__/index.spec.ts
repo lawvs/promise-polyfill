@@ -11,6 +11,7 @@ const run = (name: string, MyPromise: typeof Promise) => {
 
   beforeEach(() => {
     jest.useFakeTimers();
+    jest.spyOn(globalThis, "setTimeout");
     spyLog.mockReset();
   });
 
@@ -231,16 +232,31 @@ const run = (name: string, MyPromise: typeof Promise) => {
 
     test("should promise finally works", async () => {
       const fn = jest.fn();
+      const catchReject = jest.fn();
       MyPromise.resolve().finally(fn);
-      MyPromise.reject().finally(fn);
+      MyPromise.reject().finally(fn).catch(catchReject);
       MyPromise.resolve()
         .then(() => {
           throw 1;
         })
-        .finally(fn);
-      MyPromise.reject().then().finally(fn);
+        .finally(fn)
+        .catch(catchReject);
+      MyPromise.reject().then().finally(fn).catch(catchReject);
       await jest.runAllTimersAsync();
       expect(fn).toHaveBeenCalledTimes(4);
+    });
+
+    test.skip("promise finally should not catch error", async () => {
+      const resolveThen = jest.fn();
+      const rejectThen = jest.fn();
+      const catchReject = jest.fn();
+      MyPromise.resolve().finally().then(resolveThen);
+      MyPromise.reject().finally().then(rejectThen).catch(catchReject);
+      MyPromise.reject().then().finally().catch(catchReject).then(resolveThen);
+      await jest.runAllTimersAsync();
+      expect(resolveThen).toHaveBeenCalledTimes(2);
+      expect(rejectThen).toHaveBeenCalledTimes(0);
+      expect(catchReject).toHaveBeenCalledTimes(2);
     });
 
     test("should promise.all works", async () => {
