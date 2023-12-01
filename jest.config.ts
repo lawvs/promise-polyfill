@@ -1,10 +1,10 @@
-import type { Config } from '@jest/types'
+import type { Config } from "@jest/types";
 
 const config: Config.InitialOptions = {
-  preset: 'ts-jest',
+  preset: "ts-jest",
   testTimeout: 50,
-  testMatch: ['**/?(*.)+(spec|test).ts?(x)'],
-  collectCoverageFrom: ['src/**/*.{ts,tsx}'],
-}
+  testMatch: ["**/?(*.)+(spec|test).ts?(x)"],
+  collectCoverageFrom: ["src/**/*.{ts,tsx}"],
+};
 
-export default config
+export default config;
