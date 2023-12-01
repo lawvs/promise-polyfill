@@ -1,8 +1,6 @@
 import { Promise as PromisePolyfill } from "..";
 
 const run = (name: string, MyPromise: typeof Promise) => {
-  const nextTick = () => new Promise((res) => process.nextTick(res));
-
   function delay(ms = 0) {
     return new MyPromise((res) => setTimeout(res, ms));
   }
@@ -66,6 +64,14 @@ const run = (name: string, MyPromise: typeof Promise) => {
     test("should Promise works with await", async () => {
       await new MyPromise<void>((res) => res());
       await MyPromise.resolve();
+    });
+
+    test.skip("should Promise unwrap works", async () => {
+      const resFn = jest.fn();
+      MyPromise.resolve(MyPromise.resolve(1)).then(resFn);
+      await jest.runAllTimersAsync();
+      expect(resFn).toHaveBeenCalledTimes(1);
+      expect(resFn).toHaveBeenNthCalledWith(1, 1);
     });
 
     test("should Promise works with delay then", async () => {
@@ -230,33 +236,59 @@ const run = (name: string, MyPromise: typeof Promise) => {
       expect(rejFn).toHaveBeenCalledWith(1);
     });
 
-    test("should promise finally works", async () => {
-      const fn = jest.fn();
-      const catchReject = jest.fn();
-      MyPromise.resolve().finally(fn);
-      MyPromise.reject().finally(fn).catch(catchReject);
-      MyPromise.resolve()
-        .then(() => {
-          throw 1;
-        })
-        .finally(fn)
-        .catch(catchReject);
-      MyPromise.reject().then().finally(fn).catch(catchReject);
-      await jest.runAllTimersAsync();
-      expect(fn).toHaveBeenCalledTimes(4);
-    });
+    describe("should promise finally works", () => {
+      test("promise finally common", async () => {
+        const fn = jest.fn();
+        const catchReject = jest.fn();
+        MyPromise.resolve().finally(fn);
+        MyPromise.reject().finally(fn).catch(catchReject);
+        MyPromise.resolve()
+          .then(() => {
+            throw 1;
+          })
+          .finally(fn)
+          .catch(catchReject);
+        MyPromise.reject().then().finally(fn).catch(catchReject);
+        await jest.runAllTimersAsync();
+        expect(fn).toHaveBeenCalledTimes(4);
+      });
 
-    test.skip("promise finally should not catch error", async () => {
-      const resolveThen = jest.fn();
-      const rejectThen = jest.fn();
-      const catchReject = jest.fn();
-      MyPromise.resolve().finally().then(resolveThen);
-      MyPromise.reject().finally().then(rejectThen).catch(catchReject);
-      MyPromise.reject().then().finally().catch(catchReject).then(resolveThen);
-      await jest.runAllTimersAsync();
-      expect(resolveThen).toHaveBeenCalledTimes(2);
-      expect(rejectThen).toHaveBeenCalledTimes(0);
-      expect(catchReject).toHaveBeenCalledTimes(2);
+      test.skip("promise finally then", async () => {
+        const fn = jest.fn();
+        const resolveFn = jest.fn();
+        const catchReject = jest.fn();
+        MyPromise.resolve().finally(fn).then(resolveFn);
+        await jest.runAllTimersAsync();
+        expect(fn).toHaveBeenCalledTimes(1);
+        expect(resolveFn).toHaveBeenCalledTimes(1);
+
+        fn.mockReset();
+        resolveFn.mockReset();
+        catchReject.mockReset();
+        MyPromise.reject().finally(fn).catch(catchReject).then(resolveFn);
+        await jest.runAllTimersAsync();
+        await jest.runAllTimersAsync();
+        expect(fn).toHaveBeenCalledTimes(1);
+        expect(resolveFn).toHaveBeenCalledTimes(1);
+        expect(catchReject).toHaveBeenCalledTimes(1);
+      });
+
+      test.skip("promise finally should not catch error", async () => {
+        const resolveThen = jest.fn();
+        const rejectThen = jest.fn();
+        const catchReject = jest.fn();
+        MyPromise.resolve().finally().then(resolveThen);
+        MyPromise.reject().finally().then(rejectThen).catch(catchReject);
+        MyPromise.reject()
+          .then()
+          .finally()
+          .catch(catchReject)
+          .then(resolveThen);
+        await jest.runAllTimersAsync();
+        expect(resolveThen).toHaveBeenCalledTimes(2);
+        expect(rejectThen).toHaveBeenCalledTimes(0);
+        expect(catchReject).toHaveBeenCalledTimes(2);
+      });
     });
 
     test("should promise.all works", async () => {

@@ -6,6 +6,10 @@
   "repository": "https://github.com/lawvs/promise-polyfill",
   "author": "lawvs <18554747+lawvs@users.noreply.github.com>",
   "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  },
+  "packageManager": "pnpm@8.10.5",
   "scripts": {
     "dev": "jest --watch",
     "build": "tsc",
@@ -16,6 +20,7 @@
   },
   "devDependencies": {
     "@types/jest": "^29.5.10",
+    "@types/node": "^20.10.2",
     "jest": "^29.7.0",
     "prettier": "^3.1.0",
     "ts-jest": "^29.1.1",

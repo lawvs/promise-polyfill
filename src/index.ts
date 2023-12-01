@@ -17,6 +17,7 @@ export class Promise {
   ) {
     try {
       fn(
+        // TODO resolve promise
         (val) => this.resolveValue(val),
         (e) => this.rejectValue(e)
       );
@@ -101,7 +102,12 @@ export class Promise {
   }
 
   finally(fn: Callback) {
-    return this.then(fn, fn);
+    return this.then(
+      (v) => {
+        Promise.resolve(fn()).then(() => v);
+      },
+      (v) => Promise.resolve(fn()).then(() => Promise.reject(v))
+    );
   }
 }
 
