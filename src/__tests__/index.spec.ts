@@ -26,8 +26,7 @@ const run = (name: string, MyPromise: typeof Promise) => {
 
       expect(setTimeout).toHaveBeenCalledTimes(1);
       expect(setTimeout).toHaveBeenLastCalledWith(expect.any(Function), 1000);
-      jest.runOnlyPendingTimers();
-      await nextTick();
+      await jest.runAllTimersAsync();
 
       expect(spyLog).toHaveBeenNthCalledWith(1, "123");
       expect(spyLog).toHaveBeenNthCalledWith(2, "A");
@@ -35,8 +34,7 @@ const run = (name: string, MyPromise: typeof Promise) => {
 
       expect(setTimeout).toHaveBeenCalledTimes(2);
       expect(setTimeout).toHaveBeenLastCalledWith(expect.any(Function), 2000);
-      jest.runOnlyPendingTimers();
-      await nextTick();
+      await jest.runAllTimersAsync();
 
       expect(spyLog).toHaveBeenNthCalledWith(4, "C");
       expect(spyLog).toHaveBeenCalledTimes(4);
@@ -48,7 +46,10 @@ const run = (name: string, MyPromise: typeof Promise) => {
       const fn = jest.fn();
       new MyPromise(fn);
       expect(fn).toHaveBeenCalledTimes(1);
-      expect(fn).toHaveBeenCalledWith(expect.any(Function), expect.any(Function));
+      expect(fn).toHaveBeenCalledWith(
+        expect.any(Function),
+        expect.any(Function)
+      );
     });
 
     test("should Promise.resolve works", () => {
@@ -73,7 +74,7 @@ const run = (name: string, MyPromise: typeof Promise) => {
       promise.then(fn);
 
       expect(fn).toHaveBeenCalledTimes(0);
-      await nextTick();
+      await jest.runAllTimersAsync();
       expect(fn).toHaveBeenCalledTimes(2);
       expect(fn).toHaveBeenNthCalledWith(1, 1);
       expect(fn).toHaveBeenNthCalledWith(2, 1);
@@ -155,8 +156,7 @@ const run = (name: string, MyPromise: typeof Promise) => {
       const rejFn = jest.fn();
       const promise = new MyPromise<void>((res) => setTimeout(() => res(), 1));
       promise.then(fn).catch(rejFn);
-      jest.runAllTimers();
-      await nextTick();
+      await jest.runAllTimersAsync();
       expect(fn).toHaveBeenCalledTimes(1);
       expect(rejFn).toHaveBeenCalledTimes(1);
       expect(rejFn).toHaveBeenCalledWith(1);
@@ -168,8 +168,7 @@ const run = (name: string, MyPromise: typeof Promise) => {
       });
       const rejFn = jest.fn();
       MyPromise.reject().catch(fn).catch(rejFn);
-      jest.runAllTimers();
-      await nextTick();
+      await jest.runAllTimersAsync();
       expect(fn).toHaveBeenCalledTimes(1);
       expect(rejFn).toHaveBeenCalledTimes(1);
       expect(rejFn).toHaveBeenCalledWith(1);
@@ -215,8 +214,7 @@ const run = (name: string, MyPromise: typeof Promise) => {
       const promise = new MyPromise<void>((res) => setTimeout(() => res(), 1));
       promise.then(fn);
       promise.then(fn);
-      jest.runAllTimers();
-      await nextTick();
+      await jest.runAllTimersAsync();
       expect(fn).toHaveBeenCalledTimes(2);
     });
 
@@ -225,8 +223,7 @@ const run = (name: string, MyPromise: typeof Promise) => {
       const rejFn = jest.fn();
       const promise = new MyPromise((res, rej) => setTimeout(() => rej(1), 1));
       promise.then(fn).catch(rejFn);
-      jest.runAllTimers();
-      await nextTick();
+      await jest.runAllTimersAsync();
       expect(fn).toHaveBeenCalledTimes(0);
       expect(rejFn).toHaveBeenCalledTimes(1);
       expect(rejFn).toHaveBeenCalledWith(1);
@@ -242,7 +239,7 @@ const run = (name: string, MyPromise: typeof Promise) => {
         })
         .finally(fn);
       MyPromise.reject().then().finally(fn);
-      await nextTick();
+      await jest.runAllTimersAsync();
       expect(fn).toHaveBeenCalledTimes(4);
     });
 
